@@ -1,71 +1,116 @@
-<h2>Reservas</h2>
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-lg-6">
+      <h2 class="my-4">Reservas</h2>
 
-<h3>Crear Nueva Reserva</h3>
-<form (ngSubmit)="createReserva()">
-  <div>
-    <label for="cantidadAdultos">Cantidad de Adultos:</label>
-    <input type="number" id="cantidadAdultos" [(ngModel)]="newReserva.cantidadAdultos" name="cantidadAdultos" required>
-  </div>
-  <div>
-    <label for="cantidadNinos">Cantidad de Niños:</label>
-    <input type="number" id="cantidadNinos" [(ngModel)]="newReserva.cantidadNinos" name="cantidadNinos" required>
-  </div>
-  <div>
-    <label for="fecha">Fecha:</label>
-    <input type="date" id="fecha" [(ngModel)]="newReserva.fecha" name="fecha" required>
-  </div>
-  <div>
-    <label for="horaInicio">Hora de Inicio:</label>
-    <input type="time" id="horaInicio" [(ngModel)]="newReserva.horaInicio" name="horaInicio" required>
-  </div>
-  <div>
-    <label for="horaFin">Hora de Fin:</label>
-    <input type="time" id="horaFin" [(ngModel)]="newReserva.horaFin" name="horaFin" required>
-  </div>
-  <div>
-    <label for="cliente">Cliente:</label>
-    <select id="cliente" [(ngModel)]="newReserva.cliente" name="cliente" required>
-      <option *ngFor="let cliente of clientes" [ngValue]="cliente">{{cliente.persona.nombre}} {{cliente.persona.apellido}}</option>
-    </select>
-  </div>
-  <div>
-    <label for="empleado">Empleado:</label>
-    <select id="empleado" [(ngModel)]="newReserva.empleado" name="empleado" required>
-      <option *ngFor="let empleado of empleados" [ngValue]="empleado">{{empleado.persona.nombre}} {{empleado.persona.apellido}}</option>
-    </select>
-  </div>
-  <div>
-    <h4>Tarifas:</h4>
-    <div *ngFor="let tarifa of availableTarifas">
-      <input type="checkbox" [id]="'tarifa' + tarifa.id" (change)="onTarifaChange(tarifa, $event)">
-      <label [for]="'tarifa' + tarifa.id"> S/{{tarifa.precio}}.00</label>
+      <h3 class="mb-4">Crear Nueva Reserva</h3>
+      <form (ngSubmit)="createReserva()" class="mb-4">
+        <div class="form-group">
+          <label for="cantidadAdultos">Cantidad de Adultos:</label>
+          <input type="number" id="cantidadAdultos" [(ngModel)]="newReserva.cantidadAdultos" name="cantidadAdultos" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="cantidadNinos">Cantidad de Niños:</label>
+          <input type="number" id="cantidadNinos" [(ngModel)]="newReserva.cantidadNinos" name="cantidadNinos" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="fecha">Fecha:</label>
+          <input type="date" id="fecha" [value]="today" [(ngModel)]="newReserva.fecha" name="fecha" class="form-control" [min]="today" [max]="today" required (input)="validateDate($event)" [defaultValue]="this.today">
+        </div>
+        <div class="form-group">
+          <label for="duracionReserva">Duración de la Reserva:</label>
+          <select id="duracionReserva" [(ngModel)]="newReserva.duracionReserva" name="duracionReserva" class="form-control" required>
+            <option *ngFor="let duration of availableDurations" [value]="duration">{{duration.split(':')[0]}} hora(s)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cliente">Cliente:</label>
+          <select id="cliente" [(ngModel)]="newReserva.cliente" name="cliente" class="form-control" required>
+            <option *ngFor="let cliente of clientes" [ngValue]="cliente">{{cliente.persona.nombre}} {{cliente.persona.apellido}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="empleado">Empleado:</label>
+          <select id="empleado" [(ngModel)]="newReserva.empleado" name="empleado" class="form-control" required>
+            <option *ngFor="let empleado of empleados" [ngValue]="empleado">{{empleado.persona.nombre}} {{empleado.persona.apellido}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <h4>Tarifas:</h4>
+          <div *ngFor="let tarifa of availableTarifas" class="form-check">
+            <input type="checkbox" class="form-check-input" [id]="'tarifa' + tarifa.id" (change)="onTarifaChange(tarifa, $event)">
+            <label class="form-check-label" [for]="'tarifa' + tarifa.id"> S/{{tarifa.precio}}.00</label>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Crear Reserva</button>
+      </form>
+    </div>
+
+    <div class="col-lg-6">
+      <h3 class="mb-4">Lista de Reservas</h3>
+      <ul class="list-group">
+        <li *ngFor="let reserva of reservas" class="list-group-item d-flex justify-content-between align-items-center">
+          <span>{{reserva.fecha | date}} - {{reserva.horaInicio}} to {{reserva.horaFin}}</span>
+          <div>
+
+
+<!-- Button to open modal -->
+<button (click)="openModal(reserva)" class="btn btn-info btn-sm">Ver Detalles</button>
+
+
+            <button (click)="deleteReserva(reserva.id)" class="btn btn-danger btn-sm">Eliminar</button>
+          </div>
+        </li>
+      </ul>
+
+      <div *ngIf="reserva" class="mt-4">
+        <h3>Detalles de la Reserva</h3>
+        <p><strong>Fecha:</strong> {{reserva.fecha | date}}</p>
+        <p><strong>Hora:</strong> {{reserva.horaInicio}} - {{reserva.horaFin}}</p>
+        <p><strong>Duración:</strong> {{reserva.duracionReserva}}</p>
+        <p><strong>Adultos:</strong> {{reserva.cantidadAdultos}}</p>
+        <p><strong>Niños:</strong> {{reserva.cantidadNinos}}</p>
+        <p><strong>Cliente:</strong> {{reserva.cliente.persona.nombre}} {{reserva.cliente.persona.apellido}}</p>
+        <p><strong>Empleado:</strong> {{reserva.empleado.persona.nombre}} {{reserva.empleado.persona.apellido}}</p>
+        <h4>Tarifas:</h4>
+        <ul class="list-group">
+          <li *ngFor="let tarifa of reserva.tarifas" class="list-group-item">
+            S/{{tarifa.precio}}.00
+          </li>
+        </ul>
+      </div>
+
+      <!-- Modal for showing reservation details -->
+<div class="modal fade" id="detalleReservaModal" tabindex="-1" role="dialog" aria-labelledby="detalleReservaModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="detalleReservaModalLabel">Detalles de la Reserva</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Display reservation details here -->
+        <p><strong>Fecha:</strong> {{selectedReserva.fecha | date}}</p>
+        <p><strong>Hora:</strong> {{selectedReserva.horaInicio}} - {{selectedReserva.horaFin}}</p>
+        <p><strong>Duración:</strong> {{selectedReserva.duracionReserva}}</p>
+        <p><strong>Adultos:</strong> {{selectedReserva.cantidadAdultos}}</p>
+        <p><strong>Niños:</strong> {{selectedReserva.cantidadNinos}}</p>
+        <p><strong>Cliente:</strong> {{selectedReserva.cliente.persona.nombre}} {{selectedReserva.cliente.persona.apellido}}</p>
+        <p><strong>Empleado:</strong> {{selectedReserva.empleado.persona.nombre}} {{selectedReserva.empleado.persona.apellido}}</p>
+        <h4>Tarifas:</h4>
+        <ul class="list-group">
+          <li *ngFor="let tarifa of selectedReserva.tarifas" class="list-group-item">
+            S/{{tarifa.precio}}.00
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
-  <button type="submit">Crear Reserva</button>
-</form>
+</div>
 
-<h3>Lista de Reservas</h3>
-<ul>
-  <li *ngFor="let reserva of reservas">
-    {{reserva.fecha | date}} - {{reserva.horaInicio}} to {{reserva.horaFin}}
-    <button (click)="getReservaById(reserva.id)">Ver Detalles</button>
-    <button (click)="deleteReserva(reserva.id)">Eliminar</button>
-  </li>
-</ul>
 
-<div *ngIf="reserva">
-  <h3>Detalles de la Reserva</h3>
-  <p>Fecha: {{reserva.fecha | date}}</p>
-  <p>Hora: {{reserva.horaInicio}} - {{reserva.horaFin}}</p>
-  <p>Adultos: {{reserva.cantidadAdultos}}</p>
-  <p>Niños: {{reserva.cantidadNinos}}</p>
-  <p>Cliente: {{reserva.cliente.persona.nombre}} {{reserva.cliente.persona.apellido}}</p>
-  <p>Empleado: {{reserva.empleado.persona.nombre}} {{reserva.empleado.persona.apellido}}</p>
-  <h4>Tarifas:</h4>
-    <ul>
-      <li *ngFor="let tarifa of reserva.tarifas">
-        S/{{tarifa.precio}}.00
-      </li>
-  </ul>
-
+    </div>
+  </div>
 </div>

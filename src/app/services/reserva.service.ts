@@ -21,29 +21,6 @@ export class ReservaService {
   }
 
 /*   createReserva(reserva: Reservas): Observable<Reservas> {
-    // Calculate duration before sending the request
-    const reservaWithDuration = {
-      ...reserva,
-      duracionReserva: this.calculateDuration(reserva.horaInicio, reserva.horaFin)
-    };
-    return this.http.post<Reservas>(this.apiUrl, reservaWithDuration);
-  } */
-
-/*   createReserva(reserva: Reservas): Observable<Reservas> {
-    const reservaWithDuration = {
-      ...reserva,
-      duracionReserva: this.calculateDuration(reserva.horaInicio, reserva.horaFin)
-    };
-
-    // Log the request payload
-    console.log('Create Reserva Request Payload:', JSON.stringify(reservaWithDuration, null, 2));
-
-    return this.http.post<Reservas>(this.apiUrl, reservaWithDuration).pipe(
-      tap(response => console.log('Create Reserva Response:', response))
-    );
-  } */
-
-  createReserva(reserva: Reservas): Observable<Reservas> {
     const reservaWithFormattedData = this.formatReservaData(reserva);
 
     console.log('Create Reserva Request Payload:', JSON.stringify(reservaWithFormattedData, null, 2));
@@ -51,10 +28,16 @@ export class ReservaService {
     return this.http.post<Reservas>(this.apiUrl, reservaWithFormattedData).pipe(
       tap(response => console.log('Create Reserva Response:', response))
     );
-  }
+  } */
 
+    createReserva(reserva: Reservas): Observable<Reservas> {
+        const reservaWithFormattedData = this.formatReservaData(reserva);
+        console.log('Create Reserva Request Payload:', JSON.stringify(reservaWithFormattedData, null, 2));
+        return this.http.post<Reservas>(this.apiUrl, reservaWithFormattedData).pipe(
+          tap(response => console.log('Create Reserva Response:', response))
+        );
+      }
 
-/* PARA DESPUÉS
    updateReserva(reserva: Reservas): Observable<Reservas> {
     const reservaWithFormattedData = this.formatReservaData(reserva);
 
@@ -63,15 +46,6 @@ export class ReservaService {
     return this.http.put<Reservas>(`${this.apiUrl}/${reserva.id}`, reservaWithFormattedData).pipe(
       tap(response => console.log('Update Reserva Response:', response))
     );
-  } */
-
-  updateReserva(reserva: Reservas): Observable<Reservas> {
-    // Recalculate duration before updating
-    const reservaWithDuration = {
-      ...reserva,
-      duracionReserva: this.calculateDuration(reserva.horaInicio, reserva.horaFin)
-    };
-    return this.http.put<Reservas>(`${this.apiUrl}/${reserva.id}`, reservaWithDuration);
   }
 
   deleteReserva(id: number): Observable<void> {
@@ -80,7 +54,7 @@ export class ReservaService {
 
   // New method to calculate duration
   
-  private formatReservaData(reserva: Reservas): Reservas {
+/*   private formatReservaData(reserva: Reservas): Reservas {
     return {
       ...reserva,
       duracionReserva: this.formatTime(this.calculateDuration(reserva.horaInicio, reserva.horaFin)),
@@ -88,7 +62,27 @@ export class ReservaService {
       horaFin: this.formatTime(reserva.horaFin),
       tarifas: reserva.tarifas.filter(tarifa => tarifa !== null && typeof tarifa !== 'boolean')
     };
-  }
+  } */
+
+    private formatReservaData(reserva: Reservas): Reservas {
+        const startTime = new Date();
+        const horaInicio = this.formatTime(startTime);
+        const duration = reserva.duracionReserva.split(':')[0]; // Get hours from duration
+        const endTime = new Date(startTime.getTime() + parseInt(duration) * 60 * 60 * 1000);
+        const horaFin = this.formatTime(endTime);
+    
+        return {
+          ...reserva,
+          horaInicio,
+          horaFin,
+          duracionReserva: `${duration}:00:00`,
+          tarifas: reserva.tarifas.filter(tarifa => tarifa !== null && typeof tarifa !== 'boolean')
+        };
+      }
+    
+      private formatTime(date: Date): string {
+        return date.toTimeString().split(' ')[0];
+      }
 
   private calculateDuration(horaInicio: string, horaFin: string): string {
     const start = new Date(`1970-01-01T${horaInicio}`);
@@ -106,11 +100,11 @@ export class ReservaService {
     return `${diffHrs.toString().padStart(2, '0')}:${diffMins.toString().padStart(2, '0')}`;
   }
 
-  private formatTime(time: string): string {
+/*   private formatTime(time: string): string {
     if (!time.includes(':')) return time;
     const [hours, minutes] = time.split(':');
     return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00`;
-  }
+  } */
 
   // Additional methods specific to reservations could be added here
 

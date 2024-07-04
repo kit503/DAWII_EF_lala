@@ -10,6 +10,8 @@ import { Tarifa } from '../../interfaces/tarifa.interface';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap'; // Import NgbModule
+
 @Component({
   selector: 'app-reserva',
   standalone: true,
@@ -21,29 +23,37 @@ import { FormsModule } from '@angular/forms';
 export class ReservaComponent implements OnInit {
   reservas: Reservas[] = [];
   reserva: Reservas | null = null;
+
+  selectedReserva: any; // To store the selected reservation for the modal
+
+  today: string = new Date().toISOString().split('T')[0];
+
   newReserva: Reservas = {
     id: 0,
     cantidadAdultos: 0,
     cantidadNinos: 0,
-    duracionReserva: '00:00:00',
-    fecha: new Date(),
+    duracionReserva: '01:00:00', // 1 hora por defecto
+    fecha: new Date(this.today),    
     horaFin: '00:00:00',
     horaInicio: '00:00:00',
     cliente: {} as Clientes,
     empleado: {} as Empleado,
     tarifas: []
   };
+
   updateReserva: Reservas | null = null;
   clientes: Clientes[] = [];
   empleados: Empleado[] = [];
   tarifas: Tarifa[] = [];
   availableTarifas: Tarifa[] = [];
+  availableDurations: string[] = ['01:00:00', '02:00:00', '03:00:00', '04:00:00'];
 
   constructor(
     private reservaService: ReservaService,
     private clienteService: ClienteService,
     private empleadoService: EmpleadoService,
     private tarifaService: TarifaService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
@@ -53,6 +63,33 @@ export class ReservaComponent implements OnInit {
     this.getAllTarifas();
     this.loadAvailableTarifas();
   }
+
+  // Method to open modal and set selected reservation
+  openModal(reserva: any) {
+    this.selectedReserva = reserva;
+    this.modalService.open('detalleReservaModal', { centered: true });
+  }
+
+
+/*   validateDate(): void {
+    const selectedDate = new Date(this.newReserva.fecha);
+    const todayDate = new Date(this.today);
+  
+    if (selectedDate.getTime() !== todayDate.getTime()) {
+      this.newReserva.fecha = todayDate;
+    }
+  } */
+
+  validateDate(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.value !== this.today) {
+      input.value = this.today;
+    }
+  }
+  
+
+
+  
 
   loadAvailableTarifas(): void {
     this.tarifaService.getAllTarifas().subscribe({
@@ -143,7 +180,7 @@ export class ReservaComponent implements OnInit {
       id: 0,
       cantidadAdultos: 0,
       cantidadNinos: 0,
-      duracionReserva: '',
+      duracionReserva: '01:00:00',
       fecha: new Date(),
       horaFin: '',
       horaInicio: '',
